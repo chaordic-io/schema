@@ -8,11 +8,11 @@ import cats.implicits._
 
 object Query{
 
-  def queryFirst[A, B](sql: String, params: A)(implicit ev: ToRow[A], ev2: FromRow[B]): Reader[Connection, Option[B]] = {
-    query(sql, params).map(_.headOption)
+  def first[A, B](sql: String, params: A)(implicit ev: ToRow[A], ev2: FromRow[B]): Reader[Connection, Option[B]] = {
+    list(sql, params).map(_.headOption)
   }
 
-  def query[A : ToRow, B : FromRow](sql: String, params: A): Reader[Connection, List[B]] = {
+  def list[A : ToRow, B : FromRow](sql: String, params: A): Reader[Connection, List[B]] = {
     def toResults(rs: java.sql.ResultSet, results: List[B] = Nil): List[B] = {
       if(rs.next()){
         toResults(rs, implicitly[FromRow[B]].apply(rs,1).fold(e => throw e, r => r._1) :: results)
@@ -36,7 +36,7 @@ object Query{
     }
   }
 
-  def executeUpdate[A](sql: String, params: A)(implicit ev: ToRow[A]): Reader[Connection, Int] = {
+  def update[A](sql: String, params: A)(implicit ev: ToRow[A]): Reader[Connection, Int] = {
     ReaderT[Safe, Connection, Int]{ (c: Connection) =>
       try{
         val pstmt = c.prepareStatement(sql)
