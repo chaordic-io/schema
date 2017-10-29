@@ -19,7 +19,8 @@ case object Postgres extends Dialect{
     }
   }
 
-  implicit def listRow[A] = new FromRow[List[A]]{
+  // TODO - could this be the cause of the issue?!!!!
+  def listRow[A] = new FromRow[List[A]]{
     def apply(rs: ResultSet, index: Int): Either[Exception, (List[A], Int)] = {
       try{
         val array = rs.getArray(index).getArray()
@@ -30,6 +31,12 @@ case object Postgres extends Dialect{
       }
     }
   }
+
+  implicit def stringListRow = listRow[String]
+  implicit def uuidRow = listRow[UUID]
+  implicit def boolRow = listRow[Boolean]
+  implicit def intRow = listRow[Int]
+  implicit def longRow = listRow[Long]
 
   implicit object FromLocalDateTime extends FromRow[LocalDateTime]{
     def apply(rs: ResultSet, index: Int): Either[Exception, (LocalDateTime, Int)] = {
