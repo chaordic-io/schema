@@ -26,8 +26,8 @@ trait FromSchemaVal[A]{
 trait FromStrSchemaVal[A] extends FromSchemaVal[A]{
   def apply(value: SchemaVal, path: List[String]): Validated[NonEmptyList[ValidationError], A] = value match {
     case SchemaVal.Str(s) => fromStr(s, path)
-    case Null => Invalid(NonEmptyList.one(ValidationError(NullOrMissingFieldError, path)))
-    case err => Invalid(NonEmptyList.one(ValidationError(FormatError(s"$err is not a valid String"), path)))
+    case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
+    case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid String"), path), Nil))
   }
 
   def fromStr(s: String, path: List[String]): Validated[NonEmptyList[ValidationError], A]
@@ -37,7 +37,7 @@ object FromSchemaVal{
 
   implicit class FromResultOps[A](val o: Option[A]){
     def toResult(message: String, path: List[String]): Validated[NonEmptyList[ValidationError],A] = {
-      o.map(Valid.apply).getOrElse(Invalid(NonEmptyList.one(ValidationError(FormatError(message), path))))
+      o.map(Valid.apply).getOrElse(Invalid(NonEmptyList(ValidationError(FormatError(message), path), Nil)))
     }
   }
 
@@ -62,8 +62,8 @@ object FromSchemaVal{
       case SchemaVal.LongNum(s) => Valid(BigDecimal(s.toString))
       case SchemaVal.DoubleNum(s) => Valid(BigDecimal(s.toString))
       case SchemaVal.Str(s) => Try(BigDecimal(s)).toOption.toResult(s"$s is not a valid Decimal number", path)
-      case Null => Invalid(NonEmptyList.one(ValidationError(NullOrMissingFieldError, path)))
-      case err => Invalid(NonEmptyList.one(ValidationError(FormatError(s"$err is not a valid Decimal number"), path)))
+      case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
+      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid Decimal number"), path), Nil))
     }
   }
 
@@ -71,13 +71,23 @@ object FromSchemaVal{
     override def fromStr(s: String, path: List[String]) = Try(UUID.fromString(s)).toOption.toResult(s"$s is not a valid UUID", path)
   }
 
+  implicit def mapFromSchema[A : FromSchemaVal]: FromSchemaVal[Map[String, A]] = new FromSchemaVal[Map[String, A]] {
+    def apply(s: SchemaVal, path: List[String]) = s match{
+      case SchemaVal.Obj(s) => {
+       ???
+      }
+      case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
+      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid Decimal number"), path), Nil))
+    }
+  }
+
   implicit val intToSchema: FromSchemaVal[Int] = new FromSchemaVal[Int]{
     def apply(s: SchemaVal, path: List[String]) = s match{
       case SchemaVal.IntNum(s) => Valid(s)
       case SchemaVal.LongNum(s) => Valid(s.toInt)
       case SchemaVal.DoubleNum(s) => Valid(s.toInt)
-      case Null => Invalid(NonEmptyList.one(ValidationError(NullOrMissingFieldError, path)))
-      case err => Invalid(NonEmptyList.one(ValidationError(FormatError(s"$err is not a valid Int"), path)))
+      case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
+      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid Int"), path), Nil))
     }
   }
   implicit val doubleToSchema: FromSchemaVal[Double] = new FromSchemaVal[Double]{
@@ -85,15 +95,15 @@ object FromSchemaVal{
       case SchemaVal.DoubleNum(s) => Valid(s)
       case SchemaVal.IntNum(s) => Valid(s.toDouble)
       case SchemaVal.LongNum(s) => Valid(s.toDouble)
-      case Null => Invalid(NonEmptyList.one(ValidationError(NullOrMissingFieldError, path)))
+      case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
       case SchemaVal.Str(s) => {
         if(s.forall(s => s.isDigit || s == '.' || s == '-')){
           Valid(s.toDouble)
         }else{
-          Invalid(NonEmptyList.one(ValidationError(FormatError(s"$s is not a numeric value"), path)))
+          Invalid(NonEmptyList(ValidationError(FormatError(s"$s is not a numeric value"), path), Nil))
         }
       }
-      case err => Invalid(NonEmptyList.one(ValidationError(FormatError(s"$err is not a valid Double"), path)))
+      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid Double"), path), Nil))
     }
   }
 
@@ -106,11 +116,11 @@ object FromSchemaVal{
         if(s.forall(s => s.isDigit || s == '.' || s == '-')){
           Valid(s.toLong)
         }else{
-          Invalid(NonEmptyList.one(ValidationError(FormatError(s"$s is not a numeric value"), path)))
+          Invalid(NonEmptyList(ValidationError(FormatError(s"$s is not a numeric value"), path), Nil))
         }
       }
-      case Null => Invalid(NonEmptyList.one(ValidationError(NullOrMissingFieldError, path)))
-      case err => Invalid(NonEmptyList.one(ValidationError(FormatError(s"$err is not a valid Long"), path)))
+      case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
+      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid Long"), path), Nil))
     }
   }
 
@@ -127,7 +137,7 @@ object FromSchemaVal{
         }
       }
       case Null => Valid(false)
-      case err => Invalid(NonEmptyList.one(ValidationError(FormatError(s"$err is not a valid Boolean"), path)))
+      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid Boolean"), path), Nil))
     }
   }
 
@@ -152,8 +162,8 @@ object FromSchemaVal{
         val fromSchemaVal = implicitly[FromSchemaVal[A]]
         fromSchemaVal.apply(SchemaVal.Str(str), path).map(s => List(s))
       }
-      case Null => Invalid(NonEmptyList.one(ValidationError(NullOrMissingFieldError, path)))
-      case err => Invalid(NonEmptyList.one(ValidationError(FormatError(s"$err is not a valid List"), path)))
+      case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
+      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid List"), path), Nil))
     }
   }
 
@@ -187,8 +197,8 @@ object FromSchemaVal{
 
           (headResult combineMap fromMapT.value(obj, path)) {(h, t) => field[K](h) :: t}
         }
-        case Null => Invalid(NonEmptyList.one(ValidationError(NullOrMissingFieldError, path)))
-        case f => Invalid(NonEmptyList.one(ValidationError(FormatError(s"$f did not match required input of Obj"), path)))
+        case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
+        case f => Invalid(NonEmptyList(ValidationError(FormatError(s"$f did not match required input of Obj"), path), Nil))
       }
     }
   }
@@ -211,8 +221,8 @@ object FromSchemaVal{
   def enumFromSchema[A <: EnumEntry](enum: Enum[A]): FromSchemaVal[A] = new FromSchemaVal[A]{
     def apply(s: SchemaVal, path: List[String]) = s match{
       case SchemaVal.Str(s) => enum.withNameInsensitiveOption(s).toResult(s"$s did not match any entry in ${enum.values}", path)
-      case Null => Invalid(NonEmptyList.one(ValidationError(NullOrMissingFieldError, path)))
-      case err => Invalid(NonEmptyList.one(ValidationError(FormatError(s"$err does not match expected enum type"), path)))
+      case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
+      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err does not match expected enum type"), path), Nil))
     }
   }
 

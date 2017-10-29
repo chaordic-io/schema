@@ -17,7 +17,7 @@ object Dependencies {
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.2"
   val argonaut = "io.argonaut" %% "argonaut" % "6.2"
   val enumeratum = "com.beachape" %% "enumeratum" % "1.5.12"
-  val cats = "org.typelevel" %% "cats-core" % "1.0.0-MF"
+  val cats = "org.typelevel" %% "cats-core" % "0.9.0"
   val refined = "eu.timepit" %% "refined" % "0.8.4"
 
   // Java libs

@@ -4,8 +4,8 @@ import cats.data.NonEmptyList
 import cats.data.Validated.{Invalid, Valid}
 import org.scalatest.{FlatSpec, Matchers}
 import enumeratum._
+import io.chaordic.schema.Greeting.{Hello, Hi}
 import io.chaordic.schema.SchemaVal.{Obj, Str}
-
 import org.scalatest.prop.Checkers._
 import org.scalacheck.Prop
 
@@ -87,6 +87,11 @@ class ToFromSchemaValSpec extends FlatSpec with Matchers{
     val to = implicitly[ToSchemaVal[Double]]
 
     check(Prop.forAll((n: Double) => from(to(n), Nil) == Valid(n)))
+  }
+
+  "List of enums" should "be doable" in{
+    val list = Hello :: Hi :: Nil
+    listToSchema[Greeting].apply(list)
   }
 
 

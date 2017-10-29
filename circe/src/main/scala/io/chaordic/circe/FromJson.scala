@@ -11,7 +11,7 @@ object FromJson {
 
   def apply[A : FromSchemaVal](jsonString: String): Validated[NonEmptyList[ValidationError], A] = {
     parse(jsonString).fold(fa =>
-      Invalid(NonEmptyList.one(ValidationError(FormatError(s"$jsonString is not valid JSON"), Nil))),
+      Invalid(NonEmptyList(ValidationError(FormatError(s"$jsonString is not valid JSON"), Nil), Nil)),
       json => FromJson.apply(json))
   }
 

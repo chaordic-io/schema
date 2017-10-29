@@ -1,5 +1,6 @@
 package io.chaordic.db
 
+import java.sql.Connection
 import javax.sql.DataSource
 
 /**
@@ -13,6 +14,7 @@ case class Db(dataSource: DataSource, dialect: Dialect) {
     if(rs.next()){
       toTableNames(rs, rs.getString("TABLE_NAME") :: results)
     }else{
+      rs.close()
       results.reverse
     }
   }
@@ -29,6 +31,7 @@ case class Db(dataSource: DataSource, dialect: Dialect) {
 
       toColumns(rs, col :: results)
     }else{
+      rs.close()
       results.reverse
     }
   }
@@ -42,6 +45,8 @@ case class Db(dataSource: DataSource, dialect: Dialect) {
 
   conn.close()
 
+  def getConnection() = new DbConnection(dataSource.getConnection, tables, dialect)
+
 }
 case class Table(name: String, columns: List[Column])
 
@@ -54,3 +59,8 @@ case class Column(columnName: String,
                   isAutoIncrement: Boolean
                  )
 
+case class DbConnection(conn: Connection, tables: List[Table], dialect: Dialect){
+  def close() = conn.close()
+  def rollback() = conn.rollback()
+  def commit() = conn.commit()
+}

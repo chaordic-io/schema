@@ -1,5 +1,16 @@
 package io.chaordic.db
 
+import java.sql.{PreparedStatement, ResultSet}
+import java.time.LocalDateTime
+import java.util.UUID
+import java.util.{Map => JMap}
+
+import scala.collection.JavaConverters._
+import cats.syntax.either._
+import io.circe.Json
+import org.postgresql.util.PGobject
+import io.circe.parser._
+
 case object Postgres extends Dialect{
   def metadataBool(s: String): Boolean = {
     s.toLowerCase.trim match{
@@ -7,6 +18,75 @@ case object Postgres extends Dialect{
       case "no" => false
     }
   }
+
+  implicit def listRow[A] = new FromRow[List[A]]{
+    def apply(rs: ResultSet, index: Int): Either[Exception, (List[A], Int)] = {
+      try{
+        val array = rs.getArray(index).getArray()
+        val strings = array.asInstanceOf[Array[A]]
+        Either.right((strings.toList, index))
+      }catch{
+        case e: Exception => Either.left(e)
+      }
+    }
+  }
+
+  implicit object FromLocalDateTime extends FromRow[LocalDateTime]{
+    def apply(rs: ResultSet, index: Int): Either[Exception, (LocalDateTime, Int)] = {
+      Either.right((rs.getTimestamp(index).toLocalDateTime(), index))
+    }
+  }
+
+  implicit object FromJsonRow extends FromRow[Json]{
+    def apply(rs: ResultSet, index: Int): Either[Exception, (Json, Int)] = {
+      parse(rs.getString(index)).fold(s => Either.left(new IllegalStateException(s"Could not parse $s")), r => Either.right((r, index)))
+    }
+  }
+
+  implicit object FromStringMapRow extends FromRow[Map[String, String]]{
+    def apply(rs: ResultSet, index: Int): Either[Exception, (Map[String,String], Int)] = {
+      try{
+        val result = rs.getObject(index).asInstanceOf[JMap[Any, Any]]
+        Either.right((result.keySet().asScala.toList.foldLeft(Map[String,String]())({(acc, value) =>
+          acc ++ Map(value.toString -> result.get(value).toString)
+        }), index))
+      }catch{
+        case e: Exception => Either.left(e)
+      }
+    }
+  }
+  implicit val localDateTimeToRow: ToRow[LocalDateTime] = new ToRow[LocalDateTime]{
+    def apply(s: LocalDateTime, statement: PreparedStatement, index: Int) = statement.setTimestamp(index, java.sql.Timestamp.valueOf(s))
+  }
+
+  implicit val uuidToRow: ToRow[UUID] = new ToRow[UUID]{
+    def apply(s: UUID, statement: PreparedStatement, index: Int) = statement.setObject(index, s)
+  }
+
+  implicit val jsonToRow: ToRow[Json] = new ToRow[Json]{
+    def apply(s: Json, statement: PreparedStatement, index: Int) = {
+      val jsonObject = new PGobject()
+      jsonObject.setType("json")
+      jsonObject.setValue(s.noSpaces)
+      statement.setObject(index, jsonObject)
+    }
+  }
+
+  implicit val arrayToRow: ToRow[List[String]] = new ToRow[List[String]]{
+    def apply(s: List[String], statement: PreparedStatement, index: Int) = {
+      val arr = statement.getConnection.createArrayOf("text", s.toArray)
+      statement.setArray(index, arr)
+    }
+  }
+
+  implicit val uuidArrayToRow: ToRow[List[UUID]] = new ToRow[List[UUID]]{
+    def apply(s: List[UUID], statement: PreparedStatement, index: Int) = {
+      val arr = statement.getConnection.createArrayOf("uuid", s.toArray)
+      statement.setArray(index, arr)
+    }
+  }
+
+
 }
 /*
 serial

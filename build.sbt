@@ -34,12 +34,12 @@ import Dependencies.{scalacheck, _}
    )
 
  lazy val jdbc = (project in file("jdbc"))
-   .dependsOn(core)
+   .dependsOn(circe)
    .settings(
      commonSettings,
      name := "schema-jdbc",
-     libraryDependencies ++=Seq(
-       scalacheck % Test, scalatest % Test, postgres % Test, hikari % Test, flyway % Test)
+     libraryDependencies ++=Seq(postgres,
+       scalacheck % Test, scalatest % Test, postgres, hikari % Test, flyway % Test)
    )
 
  lazy val scalacheckLib = (project in file("scalacheck"))

@@ -13,3 +13,12 @@ This library makes extensive use of [Shapeless](https://github.com/milessabin/sh
 * **SQL/JDBC** - to easily persist/read arbitrary case classes from a database. Will initially be tested against Postgresql.
 
 These bindings will be on a modular _"pick and choose "_-basis, with separate (but compatible) libraries for each binding.
+
+### Pre-requisites
+You need PostgreSQL installed for the _jdbc_ sub project, with the following setup:
+
+    createdb schema_test
+    createuser schema_test
+    psql postgres
+    alter user schema_test with encrypted password 'password';
+    grant all privileges on database schema_test to schema_test;

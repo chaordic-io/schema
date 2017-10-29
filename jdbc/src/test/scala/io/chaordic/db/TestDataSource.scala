@@ -11,17 +11,21 @@ object TestDataSource {
   private val config = new HikariConfig(props)
   val dataSource = new HikariDataSource(config)
 
+
+  DatabaseMigrations()
+
 }
 
 object DatabaseMigrations{
 
-  def apply(): Int = {
+  def apply(): Unit = {
     val flyway = new Flyway()
     // Point it to the database
     flyway.setDataSource(TestDataSource.dataSource)
     flyway.setLocations("/db/migrations")
     // Start the migration
     flyway.migrate()
+    println("migrated")
   }
 
 }
