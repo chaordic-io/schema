@@ -3,7 +3,7 @@ package io.chaordic.circe
 import cats.data.Validated.Valid
 import enumeratum.{Enum, EnumEntry}
 import io.chaordic.prop.Generators._
-import io.chaordic.schema.{FromSchemaVal, ToSchemaVal}
+import io.chaordic.schema.{FormatError, FromSchemaVal, NullOrMissingFieldError, ToSchemaVal, ValidationError}
 import org.scalacheck.{Arbitrary, Prop}
 import org.scalatest.prop.Checkers.check
 import org.scalatest.{FlatSpec, Matchers}
@@ -38,6 +38,12 @@ class ToFromSpec extends FlatSpec with Matchers {
 
   "FromJson" should "parse the expected result" in{
     FromJson[Person](personJson) should be(Valid(person))
+  }
+
+  "Validation Errors" should "be symmetric" in{
+    val errors = ValidationError(NullOrMissingFieldError, List("foo")) :: ValidationError(FormatError("format wrong"), List("bar")) :: Nil
+    println(ToJson(errors))
+    FromJson[List[ValidationError]](ToJson(errors)) should be(Valid(errors))
   }
 
   "ToJson and FromJSON" should "should be symmetric" in{

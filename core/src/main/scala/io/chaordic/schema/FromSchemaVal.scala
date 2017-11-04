@@ -13,7 +13,7 @@ import enumeratum.{Enum, EnumEntry}
 import scala.util.Try
 
 
-case class ValidationError(msg: ValidationMessage, path: List[String])
+case class ValidationError(error: ValidationMessage, path: List[String])
 
 sealed trait ValidationMessage
 case class FormatError(msg: String) extends ValidationMessage
@@ -49,6 +49,22 @@ object FromSchemaVal{
         case (Invalid(a), Valid(b)) => Invalid(a)
         case (Invalid(a), Invalid(b)) => Invalid(NonEmptyList(a.head, a.tail ++ b.toList))
       }
+    }
+  }
+
+  implicit val validationMessageFromSchema: FromSchemaVal[ValidationMessage] = new FromSchemaVal[ValidationMessage]{
+    def apply(s: SchemaVal, path: List[String]) = s match{
+      case  SchemaVal.Obj(list) if (list.exists(l => l._1 == "errorType" && l._2 == SchemaVal.Str("NullOrMissingField"))) => Valid(NullOrMissingFieldError)
+      case SchemaVal.Obj(list)  if (list.exists(l => l._1 == "errorType" && l._2 == SchemaVal.Str("FormatError"))) => {
+        list.find(_._1 == "msg").map(m => m match {
+          case (key, SchemaVal.Str(s)) => Valid(FormatError(s))
+          case x => Invalid(NonEmptyList(ValidationError(FormatError(s"$x is not a ValidationMessage2"), path), Nil))
+        }).getOrElse(
+          Invalid(NonEmptyList(ValidationError(FormatError(s"$list does not contain expected 'msg' field"), path), Nil))
+        )
+      }
+      case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
+      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a ValidationMessage3"), path), Nil))
     }
   }
 

@@ -12,6 +12,13 @@ trait ToSchemaVal[A]{
 
 object ToSchemaVal{
 
+  implicit val validationMessageToSchema: ToSchemaVal[ValidationMessage]= new ToSchemaVal[ValidationMessage]{
+    def apply(s: ValidationMessage) = s match{
+      case NullOrMissingFieldError => SchemaVal.Obj(List(("errorType", SchemaVal.Str("NullOrMissingField"))))
+      case FormatError(msg) => SchemaVal.Obj(List(("errorType", SchemaVal.Str("FormatError")), ("msg", SchemaVal.Str(msg))))
+    }
+  }
+
   implicit def enumEntryToSchema[A <: EnumEntry] = new ToSchemaVal[A] {
     def apply(a: A) = SchemaVal.Str(a.entryName)
   }

@@ -19,7 +19,7 @@ case object Postgres extends Dialect{
     }
   }
 
-  // TODO - could this be the cause of the issue?!!!!
+  // This should never be an implicit - it's catchment will be far too wide.
   def listRow[A] = new FromRow[List[A]]{
     def apply(rs: ResultSet, index: Int): Either[Exception, (List[A], Int)] = {
       try{
@@ -64,10 +64,17 @@ case object Postgres extends Dialect{
   }
   implicit val localDateTimeToRow: ToRow[LocalDateTime] = new ToRow[LocalDateTime]{
     def apply(s: LocalDateTime, statement: PreparedStatement, index: Int) = statement.setTimestamp(index, java.sql.Timestamp.valueOf(s))
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.TIMESTAMP)
   }
 
   implicit val uuidToRow: ToRow[UUID] = new ToRow[UUID]{
     def apply(s: UUID, statement: PreparedStatement, index: Int) = statement.setObject(index, s)
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.JAVA_OBJECT)
+  }
+
+  implicit val mapToRow: ToRow[Map[String,String]] = new ToRow[Map[String,String]]{
+    def apply(s: Map[String,String], statement: PreparedStatement, index: Int) = statement.setObject(index, s.asJava)
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.JAVA_OBJECT)
   }
 
   implicit val jsonToRow: ToRow[Json] = new ToRow[Json]{
@@ -77,6 +84,7 @@ case object Postgres extends Dialect{
       jsonObject.setValue(s.noSpaces)
       statement.setObject(index, jsonObject)
     }
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.CLOB) // probably wrong?
   }
 
   implicit val arrayToRow: ToRow[List[String]] = new ToRow[List[String]]{
@@ -84,6 +92,8 @@ case object Postgres extends Dialect{
       val arr = statement.getConnection.createArrayOf("text", s.toArray)
       statement.setArray(index, arr)
     }
+
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.ARRAY)
   }
 
   implicit val uuidArrayToRow: ToRow[List[UUID]] = new ToRow[List[UUID]]{
@@ -91,6 +101,8 @@ case object Postgres extends Dialect{
       val arr = statement.getConnection.createArrayOf("uuid", s.toArray)
       statement.setArray(index, arr)
     }
+
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.ARRAY)
   }
 
 

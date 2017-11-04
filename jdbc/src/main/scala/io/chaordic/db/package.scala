@@ -9,33 +9,46 @@ import shapeless.{::, Generic, HList, HNil}
 package object db {
   implicit val stringToRow: ToRow[String] = new ToRow[String]{
     def apply(s: String, statement: PreparedStatement, index: Int) = statement.setString(index, s)
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.VARCHAR)
   }
   implicit val intToRow: ToRow[Int] = new ToRow[Int]{
     def apply(s: Int, statement: PreparedStatement, index: Int) = statement.setInt(index, s)
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.INTEGER)
   }
   implicit val doubleToRow: ToRow[Double] = new ToRow[Double]{
     def apply(s: Double, statement: PreparedStatement, index: Int) = statement.setDouble(index, s)
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.DOUBLE)
   }
 
   implicit val longToRow: ToRow[Long] = new ToRow[Long]{
     def apply(s: Long, statement: PreparedStatement, index: Int) = statement.setLong(index, s)
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.BIGINT)
   }
 
   implicit val booleanToRow: ToRow[Boolean] = new ToRow[Boolean] {
     def apply(s: Boolean, statement: PreparedStatement, index: Int) = statement.setBoolean(index, s)
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.BOOLEAN)
   }
 
   implicit val unitToRow: ToRow[Unit] = new ToRow[Unit]{
     def apply(s: Unit, statement: PreparedStatement, index: Int) = ()
+    def setNull(statement: PreparedStatement, index: Int): Unit = ()
   }
 
   implicit val hnilToRow: ToRow[HNil] = new ToRow[HNil]{
     def apply(s: HNil, statement: PreparedStatement, index: Int) = ()
     override def length: Int = 0
+    def setNull(statement: PreparedStatement, index: Int): Unit = ()
   }
 
   implicit def optionToRow[A : ToRow]: ToRow[Option[A]] = new ToRow[Option[A]]{
-    def apply(s: Option[A], statement: PreparedStatement, index: Int) = s.foreach(v => implicitly[ToRow[A]].apply(v, statement, index))
+    def apply(s: Option[A], statement: PreparedStatement, index: Int) = s.map(v => implicitly[ToRow[A]].apply(v, statement, index)).getOrElse({
+      setNull(statement, index)
+    })
+    def setNull(statement: PreparedStatement, index: Int): Unit = {
+      val toRow = implicitly[ToRow[A]]
+      toRow.setNull(statement, index)
+    }
   }
 
   implicit def hconsToRow[H: ToRow, T <: HList: ToRow]: ToRow[H :: T] = new ToRow[H :: T]{
@@ -47,6 +60,7 @@ package object db {
         }
       }
     }
+    def setNull(statement: PreparedStatement, index: Int): Unit = ()
 
     override def length: Int = {
       implicitly[ToRow[H]].length + implicitly[ToRow[T]].length
@@ -64,6 +78,7 @@ package object db {
                                             ): ToRow[C] = new ToRow[C]{
     def apply(c: C, statement: PreparedStatement, index: Int) = rc.apply(gen.to(c), statement, index)
     override def length= rc.length
+    def setNull(statement: PreparedStatement, index: Int): Unit = ()
   }
 
 
@@ -126,6 +141,7 @@ package object db {
         (a._1 :: b._1, b._2)
       }
     }
+    def setNull(statement: PreparedStatement, index: Int): Unit = ()
   }
 
   /**
