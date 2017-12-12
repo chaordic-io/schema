@@ -87,16 +87,6 @@ object FromSchemaVal{
     override def fromStr(s: String, path: List[String]) = Try(UUID.fromString(s)).toOption.toResult(s"$s is not a valid UUID", path)
   }
 
-  implicit def mapFromSchema[A : FromSchemaVal]: FromSchemaVal[Map[String, A]] = new FromSchemaVal[Map[String, A]] {
-    def apply(s: SchemaVal, path: List[String]) = s match{
-      case SchemaVal.Obj(s) => {
-       ???
-      }
-      case Null => Invalid(NonEmptyList(ValidationError(NullOrMissingFieldError, path), Nil))
-      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid Decimal number"), path), Nil))
-    }
-  }
-
   implicit val intToSchema: FromSchemaVal[Int] = new FromSchemaVal[Int]{
     def apply(s: SchemaVal, path: List[String]) = s match{
       case SchemaVal.IntNum(s) => Valid(s)
@@ -184,7 +174,7 @@ object FromSchemaVal{
   }
 
   implicit def schemaToSet[A : FromSchemaVal]: FromSchemaVal[Set[A]] = new FromSchemaVal[Set[A]]{
-    def apply(s: SchemaVal, path: List[String]) = schemaToList[A].apply(s, path).map(_.toSet)
+    def apply(s: SchemaVal, path: List[String]) = schemaToList[A].apply(s, path).map(_.toSet[A])
   }
 
   implicit def schemaToOpt[A : FromSchemaVal]: FromSchemaVal[Option[A]] = new FromSchemaVal[Option[A]]{
