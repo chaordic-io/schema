@@ -21,12 +21,12 @@ object Dependencies {
   val refined = "eu.timepit" %% "refined" % "0.8.4"
 
   // Java libs
-  val postgres = "org.postgresql" % "postgresql" % "9.4.1212"
-  val hikari = "com.zaxxer" % "HikariCP" % "2.6.2"
+  val postgres = "org.postgresql" % "postgresql" % "42.1.4"
+  val hikari = "com.zaxxer" % "HikariCP" % "2.7.4"
   val logback = "ch.qos.logback" % "logback-core" % "1.2.3"
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.25"
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.7.25"
-  val flyway = "org.flywaydb" % "flyway-core" % "4.2.0"
+  val flyway = "org.flywaydb" % "flyway-core" % "5.0.0"
   val solrj = "org.apache.solr" % "solr-solrj" % "6.6.1"
   val scrypt = "com.lambdaworks" % "scrypt" % "1.4.0"
   val itext = "com.itextpdf" % "itextpdf" % "5.5.12"
