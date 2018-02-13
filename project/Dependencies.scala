@@ -2,9 +2,9 @@ import sbt._
 
 object Dependencies {
 
-  val http4sVersion = "0.17.0"
+  val http4sVersion = "0.18.0"
   val monocleVersion = "1.4.0"
-  val circeVersion = "0.8.0"
+  val circeVersion = "0.9.1"
   //test libs
   val scalatest = "org.scalatest" %% "scalatest" % "3.0.1"
   val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.5"
@@ -17,7 +17,7 @@ object Dependencies {
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.2"
   val argonaut = "io.argonaut" %% "argonaut" % "6.2"
   val enumeratum = "com.beachape" %% "enumeratum" % "1.5.12"
-  val cats = "org.typelevel" %% "cats-core" % "0.9.0"
+  val cats = "org.typelevel" %% "cats-core" % "1.0.1"
   val refined = "eu.timepit" %% "refined" % "0.8.4"
 
   // Java libs

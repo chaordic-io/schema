@@ -1,6 +1,7 @@
 package io.chaordic
 
 import cats.data.{NonEmptyList, Validated}
+import cats.effect.IO
 import io.chaordic.schema.SchemaVal.Obj
 import io.chaordic.schema.{FromSchemaVal, SchemaVal, ValidationError}
 import org.http4s.Request
@@ -8,7 +9,7 @@ import org.http4s.Request
 package object http4s {
 
 
-  implicit class RequestOps(request: Request){
+  implicit class RequestOps(request: Request[IO]){
     def as[A : FromSchemaVal]: Validated[NonEmptyList[ValidationError],A] = {
       fromMultiParams[A](request.multiParams)
     }
