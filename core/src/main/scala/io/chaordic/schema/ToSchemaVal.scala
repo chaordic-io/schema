@@ -50,22 +50,7 @@ object ToSchemaVal{
   implicit val booleanToSchema: ToSchemaVal[Boolean] = new ToSchemaVal[Boolean]{
     def apply(s: Boolean) = SchemaVal.Bool(s)
   }
-
-  implicit val localDateToSchema: ToSchemaVal[LocalDate] = new ToSchemaVal[LocalDate]{
-    def apply(s: LocalDate) = {
-      import java.time.format.DateTimeFormatter
-      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-      SchemaVal.Str(s.format(formatter))
-    }
-  }
-
-  implicit val localDateTimeToSchema: ToSchemaVal[LocalDateTime] = new ToSchemaVal[LocalDateTime]{
-    def apply(s: LocalDateTime) = {
-      import java.time.format.DateTimeFormatter
-      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-      SchemaVal.Str(s.format(formatter))
-    }
-  }
+  
 
   implicit def optionToSchema[A : ToSchemaVal]: ToSchemaVal[Option[A]] = new ToSchemaVal[Option[A]]{
     def apply(s: Option[A]) = {

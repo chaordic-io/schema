@@ -149,30 +149,6 @@ object FromSchemaVal{
     }
   }
 
-  implicit val localDateToSchema: FromSchemaVal[LocalDate] = new FromSchemaVal[LocalDate]{
-    def apply(s: SchemaVal, path: List[String]) = s match{
-      case SchemaVal.Str(s) => {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        Try(LocalDate.parse(s, formatter)).fold(f => Invalid(NonEmptyList(ValidationError(FormatError(s"$s is not a valid LocalDate"), path), Nil)),
-          r => Valid(r)
-        )
-      }
-      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid LocalDate"), path), Nil))
-    }
-  }
-
-  implicit val localDateTimeToSchema: FromSchemaVal[LocalDateTime] = new FromSchemaVal[LocalDateTime]{
-    def apply(s: SchemaVal, path: List[String]) = s match{
-      case SchemaVal.Str(s) => {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        Try(LocalDateTime.parse(s, formatter)).fold(f => Invalid(NonEmptyList(ValidationError(FormatError(s"$s is not a valid LocalDate"), path), Nil)),
-          r => Valid(r)
-        )
-      }
-      case err => Invalid(NonEmptyList(ValidationError(FormatError(s"$err is not a valid LocalDate"), path), Nil))
-    }
-  }
-
   implicit def schemaToList[A : FromSchemaVal]: FromSchemaVal[List[A]] = new FromSchemaVal[List[A]]{
     def apply(s: SchemaVal, path: List[String]) = s match{
       case SchemaVal.SList(s) => {
