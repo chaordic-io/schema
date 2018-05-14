@@ -1,7 +1,7 @@
 package io.chaordic.db
 
 import java.sql.{PreparedStatement, ResultSet}
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import java.util.UUID
 import java.util.{Map => JMap}
 
@@ -44,6 +44,12 @@ case object Postgres extends Dialect{
     }
   }
 
+  implicit object FromLocalDate extends FromRow[LocalDate]{
+    def apply(rs: ResultSet, index: Int): Either[Exception, (LocalDate, Int)] = {
+      Either.right((rs.getDate(index).toLocalDate(), index))
+    }
+  }
+
   implicit object FromJsonRow extends FromRow[Json]{
     def apply(rs: ResultSet, index: Int): Either[Exception, (Json, Int)] = {
       parse(rs.getString(index)).fold(s => Either.left(new IllegalStateException(s"Could not parse $s")), r => Either.right((r, index)))
@@ -65,6 +71,11 @@ case object Postgres extends Dialect{
   implicit val localDateTimeToRow: ToRow[LocalDateTime] = new ToRow[LocalDateTime]{
     def apply(s: LocalDateTime, statement: PreparedStatement, index: Int) = statement.setTimestamp(index, java.sql.Timestamp.valueOf(s))
     def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.TIMESTAMP)
+  }
+
+  implicit val localDateToRow: ToRow[LocalDate] = new ToRow[LocalDate]{
+    def apply(s: LocalDate, statement: PreparedStatement, index: Int) = statement.setDate(index, java.sql.Date.valueOf(s))
+    def setNull(statement: PreparedStatement, index: Int): Unit = statement.setNull(index, java.sql.Types.DATE)
   }
 
   implicit val uuidToRow: ToRow[UUID] = new ToRow[UUID]{

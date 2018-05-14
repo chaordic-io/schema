@@ -50,7 +50,7 @@ object ToSchemaVal{
   implicit val booleanToSchema: ToSchemaVal[Boolean] = new ToSchemaVal[Boolean]{
     def apply(s: Boolean) = SchemaVal.Bool(s)
   }
-  
+
 
   implicit def optionToSchema[A : ToSchemaVal]: ToSchemaVal[Option[A]] = new ToSchemaVal[Option[A]]{
     def apply(s: Option[A]) = {
