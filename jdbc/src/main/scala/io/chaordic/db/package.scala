@@ -123,8 +123,12 @@ package object db {
     }
   }
   implicit def optionRow[A : FromRow] = new FromRow[Option[A]] {
-    def apply(rs: ResultSet, index: Int): Either[Exception, (Option[A], Int)] = {
-      Either.right(implicitly[FromRow[A]].apply(rs, index).fold(e => (None, index), r => (Option(r._1), index)))
+    def apply(rs: ResultSet, index: Int): Either[Exception, (Option[A], Int)] = { 
+      try{
+        Either.right(implicitly[FromRow[A]].apply(rs, index).fold(e => (None, index), r => (Option(r._1), index)))
+      }catch{
+        case e: Exception => Either.left(e)
+      }
     }
   }
 

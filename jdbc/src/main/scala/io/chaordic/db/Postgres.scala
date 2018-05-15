@@ -40,13 +40,21 @@ case object Postgres extends Dialect{
 
   implicit object FromLocalDateTime extends FromRow[LocalDateTime]{
     def apply(rs: ResultSet, index: Int): Either[Exception, (LocalDateTime, Int)] = {
-      Either.right((rs.getTimestamp(index).toLocalDateTime(), index))
+      try {
+        Either.right((rs.getTimestamp(index).toLocalDateTime(), index))
+      }catch{
+        case e: Exception => Either.left(e)
+      }
     }
   }
 
   implicit object FromLocalDate extends FromRow[LocalDate]{
     def apply(rs: ResultSet, index: Int): Either[Exception, (LocalDate, Int)] = {
-      Either.right((rs.getDate(index).toLocalDate(), index))
+      try {
+        Either.right((rs.getDate(index).toLocalDate(), index))
+      }catch{
+        case e: Exception => Either.left(e)
+      }
     }
   }
 
