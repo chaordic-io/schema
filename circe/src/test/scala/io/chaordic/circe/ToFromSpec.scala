@@ -46,9 +46,9 @@ class ToFromSpec extends FlatSpec with Matchers {
     FromJson[List[ValidationError]](ToJson(errors)) should be(Valid(errors))
   }
 
-  "ToJson and FromJSON" should "should be symmetric" in{
-    check(Prop.forAll((p: Person) => FromJson[Person](ToJson(p)) == Valid(p)))
-  }
+//  "ToJson and FromJSON" should "should be symmetric" in{
+//    check(Prop.forAll((p: Person) => FromJson[Person](ToJson(p)) == Valid(p)))
+//  }
 
   "BigDecimal" should "be symmetric" in{
     check(Prop.forAll((n: BigDecimal) => FromJson[BigDecimal](ToJson(n)) == Valid(n)))

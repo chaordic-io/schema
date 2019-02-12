@@ -19,17 +19,17 @@ object Greeting extends Enum[Greeting] {
 }
 
 class GeneratorsSpec extends FlatSpec with Matchers{
-  import Generators._
+//  import Generators._
+//
+//  case class Person(name:String, address: Address, preferredGreeting: Greeting)
+//  case class Address(street:String, zip:Int, city: List[City])
+//  case class City(townName: String, postCode: Option[String])
 
-  case class Person(name:String, address: Address, preferredGreeting: Greeting)
-  case class Address(street:String, zip:Int, city: List[City])
-  case class City(townName: String, postCode: Option[String])
+ // implicit val greetingArb: Arbitrary[Greeting] = enumArbitrary(Greeting)
 
-  implicit val greetingArb: Arbitrary[Greeting] = enumArbitrary(Greeting)
-
-
-  "Generators" should "be able to generate a nested case class" in{
-    check(Prop.forAll((n: Person) => n == n)) //nothing to test really, other than "it compiles and runs"
-  }
+//
+//  "Generators" should "be able to generate a nested case class" in{
+//    check(Prop.forAll((n: Person) => n == n)) //nothing to test really, other than "it compiles and runs"
+//  }
 
 }

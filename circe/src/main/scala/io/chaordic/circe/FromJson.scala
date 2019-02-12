@@ -27,7 +27,7 @@ object FromJson {
     }) orElse json.asString.map(Str) orElse json.asBoolean.map(Bool) orElse
     json.asNumber.map(j => {
       if(j.toString.indexOf(".") < 0){
-        LongNum(j.truncateToLong)
+        LongNum(j.toLong.getOrElse(j.toDouble.toLong))
       }else{
         DoubleNum(j.toDouble)
       }

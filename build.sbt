@@ -2,10 +2,15 @@ import Dependencies.{scalacheck, _}
 
  lazy val commonSettings = Seq(
    organization := "io.chaordic",
-   version := "0.2.0-SNAPSHOT",
-   scalaVersion := "2.12.4"
-   //crossScalaVersions := Seq("2.12.4", "2.11.11")
+   version := "0.3.0",
+   scalaVersion := "2.12.8",
+   licenses ++= Seq(("MIT", url("http://opensource.org/licenses/MIT"))),
+   bintrayOmitLicense := true
  )
+
+//lazy val publishSettings =  Seq(
+//  licenses ++= Seq(("MIT", url("http://opensource.org/licenses/MIT")))
+//)
 
  lazy val core = (project in file("core"))
    .settings(
